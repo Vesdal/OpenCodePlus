@@ -1,4 +1,10 @@
 (() => {
+  // Keep only sessions actually rendered in the loose-session inventory.
+  // Project sessions remain available through their original project loader.
+  window.__plusLooseSessions = (sessions, directories, normalize) => {
+    const known = new Set(directories.map(normalize));
+    return sessions.filter(session => !known.has(normalize(session.location.directory)));
+  };
   const key = 'plus.session-bin';
   const compact = session => ({id: session.id, title: session.title, location: {directory: session.location.directory}});
   const decode = value => JSON.parse(value || '[]').map(entry => ({...entry, session: compact(entry.session)}));
