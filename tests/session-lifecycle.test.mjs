@@ -31,7 +31,7 @@ test('settings and sidebar share session identity and inventory', () => {
   assert.ok(settings.includes('__plusSessionServerKey(e.server)'));
   assert.ok(settings.includes('__plusSessions.bin(sessionServer())'));
   assert.ok(settings.includes('__plusSessions.restore(sessionServer()'));
-  assert.ok(navigation.includes('iconButton(`Restore session`'));
+  assert.ok(navigation.includes('__plusSessionServerKey = server => Q.key(server)'));
   assert.ok(!navigation.includes('button(`Restore`'));
 });
 
@@ -39,5 +39,5 @@ test('sidebar trash never calls the destructive session API', () => {
   const source = fs.readFileSync('src/navigation.js', 'utf8');
   assert.ok(!source.includes('data.session.remove('));
   assert.ok(source.includes('Move session to bin'));
-  assert.ok(source.includes('__plusSessions.restore('));
+  assert.ok(source.includes('__plusSessions.close('));
 });

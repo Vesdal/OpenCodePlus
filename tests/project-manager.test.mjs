@@ -13,11 +13,11 @@ test('active and bin inventories both support select all and bulk actions',()=>{
   assert.ok(source.includes("trigger.textContent='•••'"));
   assert.ok(!source.includes("button('Add project'"));
 });
-test('sidebar trash moves directly to a visible bin; destructive controls use danger styling',()=>{
+test('sidebar trash preserves settings bin; destructive controls use danger styling',()=>{
   const source=fs.readFileSync('src/navigation.js','utf8');
   assert.ok(source.includes('iconButton(`Move project to bin`,`delete`,()=>projects.project.close('));
-  assert.ok(source.includes('plus-sidebar-bin'));
-  assert.ok(source.includes('const ctx=global.ensureServerCtx(server)'));
+  assert.ok(!source.includes('plus-sidebar-bin'));
+  assert.ok(fs.readFileSync('src/project-settings.js','utf8').includes('context.projects.bin()'));
   const css=fs.readFileSync('src/navigation.css','utf8');
   assert.ok(css.includes('--plus-danger-bg:#4b1619'));
 });

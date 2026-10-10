@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-test('Manage bin directly selects the Projects settings tab', () => {
-  assert.ok(fs.readFileSync('src/navigation.js', 'utf8').includes('transition(jH(`projects`))'));
+test('bin is available only in Projects settings, not the sidebar', () => {
+  const sidebar = fs.readFileSync('src/navigation.js', 'utf8');
+  assert.ok(!sidebar.includes('Manage bin'));
+  assert.ok(!sidebar.includes('plus-sidebar-bin'));
+  assert.ok(fs.readFileSync('src/project-settings.js', 'utf8').includes("section('Bin',true)"));
 });
 
 test('bin retains only restore metadata and leaves the original session intact', () => {

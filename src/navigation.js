@@ -19,7 +19,7 @@ function plusStart() {
   root.append(heading,text,add);return root;
 }
 function plusSidebar() {
-  const home=rH(), global=bR(), projects=WU(home), tabs=wL(), settings=jH(), language=TD();
+   const home=rH(), projects=WU(home), tabs=wL(), settings=jH(), language=TD();
   let initialized=false,startupTimer;
   A(()=>clearTimeout(startupTimer));
   T(()=>{
@@ -111,29 +111,6 @@ function plusSidebar() {
      window.addEventListener(`plus-sessions-restored`,refreshLoose);
      refreshLoose();A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshLoose);looseController?.abort()});return group;
   }}));
-   const bin=document.createElement(`details`);bin.className=`plus-sidebar-bin`;bin.open=true;
-   const [binRevision,setBinRevision]=S(0);const binChanged=()=>setBinRevision(value=>value+1);
-   window.addEventListener(`plus-projects-changed`,binChanged);A(()=>window.removeEventListener(`plus-projects-changed`,binChanged));
-   T(()=>{binRevision();bin.replaceChildren();const summary=document.createElement(`summary`);summary.textContent=`Bin`;bin.append(summary);let count=0;
-      for(const server of home.server.list()){
-        const ctx=global.ensureServerCtx(server);
-        for(const entry of window.__plusSessions.bin(Q.key(server))){
-          count++;const row=document.createElement(`div`);row.className=`plus-sidebar-bin-row`;
-          const name=document.createElement(`span`);name.textContent=entry.session.title||`New session`;name.title=entry.session.location.directory;
-          const restore=iconButton(`Restore session`,`pin`,()=>window.__plusSessions.restore(Q.key(server),entry.session.id));
-          restore.innerHTML=`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></svg>`;
-          row.append(name,restore);bin.append(row);
-        }
-       for(const entry of ctx.projects.bin()){
-         count++;const row=document.createElement(`div`);row.className=`plus-sidebar-bin-row`;
-         const name=document.createElement(`span`);name.textContent=entry.directory.split(/[\\/]/).filter(Boolean).at(-1)||entry.directory;name.title=entry.directory;
-          const restore=iconButton(`Restore project`,`pin`,()=>ctx.projects.open(entry.directory));
-          restore.innerHTML=`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></svg>`;
-          row.append(name,restore);bin.append(row);
-       }
-     }
-      summary.textContent=`Bin (${count})`;if(!count){const empty=document.createElement(`p`);empty.textContent=`The bin is empty.`;bin.append(empty)}else bin.append(button(`Manage bin`,()=>window.__opencodePlus.transition(jH(`projects`))));
-   });list.append(bin);
    const footer=document.createElement(`div`);footer.className=`plus-nav-footer`;
   footer.append(button(`+ Add project`,()=>{const server=home.server.focused();if(server)projects.project.choose(server)}),button(`+ New session`,()=>home.project.openNewSession()));
   const settingsButton=button(``,()=>window.__opencodePlus.transition(settings),`plus-nav-settings`);settingsButton.title=`Settings`;settingsButton.setAttribute(`aria-label`,`Settings`);

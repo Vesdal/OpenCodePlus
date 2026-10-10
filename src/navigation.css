@@ -13,7 +13,7 @@
 .plus-manager-heading h2 {font-size:18px;font-weight:600;}
 .plus-manager-section {margin-bottom:32px;}
 .plus-manager-section h3 {font-weight:600;margin-bottom:8px;}
-.plus-manager-section p,.plus-project-copy span,.plus-sidebar-bin p {color:var(--v2-text-text-muted);}
+.plus-manager-section p,.plus-project-copy span {color:var(--v2-text-text-muted);}
 .plus-selection-toolbar {margin:16px 0;}
 .plus-selection-toolbar label {display:flex;align-items:center;gap:8px;}
 .plus-project-manager button {padding:8px 12px;border:1px solid var(--v2-border-border-muted);border-radius:6px;min-height:36px;}
@@ -25,10 +25,6 @@
 .plus-danger:hover:not(:disabled),.plus-navigation button.plus-danger:hover {background:var(--plus-danger-hover,#682126);}
 :root {--plus-danger-text:#ffb4ab;--plus-danger-bg:#4b1619;--plus-danger-hover:#682126;}
 :root[data-theme=light] {--plus-danger-text:#a31420;--plus-danger-bg:#fff0f0;--plus-danger-hover:#ffdddd;}
-.plus-sidebar-bin {border-top:1px solid var(--v2-border-border-muted);margin-top:12px;padding-top:12px;}
-.plus-sidebar-bin summary {cursor:pointer;font-weight:600;padding:8px;}
-.plus-sidebar-bin-row {display:flex;align-items:center;gap:4px;padding:8px;border-bottom:1px solid var(--v2-border-border-muted);min-width:0;}
-.plus-sidebar-bin-row>span {flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .plus-project-manager [hidden] {display:none!important;}
 .plus-project-menu {position:relative;flex-shrink:0;}
 .plus-project-menu summary {list-style:none;cursor:pointer;padding:8px 12px;border-radius:6px;}
