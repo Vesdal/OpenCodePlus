@@ -69,10 +69,11 @@ The wrappers require .NET Framework 4.x. The portable unpacks a runtime into
 LocalAppData and does not require an installed OpenCode desktop; it uses the
 shared service/data conventions rather than keeping everything on a USB stick.
 
-The existing executables were compiled and their payload archive was checked,
-but **were not launched or installation-tested**. They predate the documentation
-and knowledge-base additions in this source revision. They must not be described
-as fully verified or as including those additions without a rebuild.
+The executables were rebuilt with `AGENTS.md`, the curated knowledge base, and
+the pinned upstream source; their payload archive was checked. They **were not
+launched or installation-tested**, as requested by the creator. They must not be
+described as fully verified. Binary assets remain in a draft release while
+source-to-binary and dependency-license verification are pending.
 
 ## Source and building
 
