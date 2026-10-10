@@ -1,29 +1,26 @@
 # OpenCode+
 
-hi. little app gremlin is learning very harb.
+Hi
 
-I wanted something like Base44, but local and easier for someone who cannot
+I wanted something like Base44, but local and easier for someone who can't
 code. Also: **native apps**, not just websites. Web apps are fine too. I just
-want my app to sometimes escape the browser. let him out.
+want my app to be let out of its basement.
 
-So I used AI to customize [OpenCode](https://github.com/anomalyco/opencode):
+I used AI to customize [OpenCode](https://github.com/anomalyco/opencode):
 a friendlier project/chat sidebar, a bin with restore, and some instructions
 and knowledge to help the assistant build things more carefully.
 
-**Still incomplete.** This is my little experiment, not a full Base44
+**Still incomplete.** This is my little experiment, sooo not a full Base44
 replacement yet. It needs updates and more testing. Zero-code is the goal for
-the user, not a promise that setup and bugs have gone to colleg and graduated.
-Native apps still need their platform SDKs; cloud AI can still cost money.
+the user but dont set the bar too high lol. May still have some improvements to make.
 
 ## Money bit
 
-I spent about **$70–80 in API calls**, with a few failed tries along the way.
-I have no coding skills: I supplied ideas and feedback, not the actual
-engineering heavy lifting. Charging like I wrote all this myself wouldn't feel
-right to me, so it's free.
+I spent about **$70–80 in API calls**, with a FEW (uuuh ye definitely just a few) failed tries along the way
+I have neither coding skills or time to learn coding (uni is graping my ahh), so have mercy on me
+Charging like I wrote all this myself wouldn't feel right to me, so it's free and here on github (the goat, long live the admins)
 
-Any support is appreciated, though. Buy Me a Coffee coming later. No paywall,
-no guilt trip. gremlin has already eaten enough of my wallet.
+Any support is appreciated tho
 
 ## What's included
 
@@ -40,21 +37,17 @@ Windows installer and portable are uploaded to a **draft release**. They include
 the guidance and sources, but are unsigned and have **not been run or
 installation-tested**. Source/binary and dependency-license checks remain
 unfinished, so they're not public downloads yet. Portable unpacks to
-LocalAppData; it doesn't mean "everything stays on your USB stick."
+LocalAppData; still dosn't stick to your usb drive.
 
-## Credit where it's due
+## Credits
 
-**The original OpenCode developers deserve the main credit:**
+**Original OpenCode developers**
 [Anomaly](https://github.com/anomalyco), [Dax](https://github.com/thdxr),
 [Adam](https://github.com/adamdotdev), and
 [all contributors](https://github.com/anomalyco/opencode/graphs/contributors).
-They built the foundation. I made requests at it until this happened.
 
 **Vesdal:** idea, direction, and feedback.
-**ChatGPT and Claude:** AI-assisted coding and iteration, not human GitHub
-collaborators. More in [COLLABORATORS.md](COLLABORATORS.md).
+**ChatGPT and Claude:** AI-assisted coding and iteration. More in [COLLABORATORS.md](COLLABORATORS.md).
 
 Customizations: AGPL-3.0-only. OpenCode: MIT. Other components keep their licenses.
 Not affiliated with Base44, Anomaly, OpenAI, or Anthropic.
-
-pls be gentle. app is still studing.
