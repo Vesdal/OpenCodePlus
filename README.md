@@ -1,3 +1,5 @@
+[![Buy me a matcha](https://img.shields.io/badge/%F0%9F%8D%B5_Buy_me_a_matcha-f4e9c6?style=for-the-badge&labelColor=f4e9c6&color=f4e9c6)](https://www.buymeacoffee.com/vesdal)
+
 # OpenCode+
 
 Hi
