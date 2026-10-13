@@ -36,4 +36,13 @@
       write(read().map(entry => entry.server === server && entry.session.id === id ? {...entry, status: 'deleted'} : entry));
     }
   };
+  // Permanent deletion helper. Only the Projects-settings "Delete permanently"
+  // flow calls this, with the real server SDK, after user confirmation.
+  // Move-to-bin paths (sidebar trash) never call it: they only hide entries.
+  // Backend removal actually deletes session data from this computer, freeing space.
+  window.__plusPurgeSessionIds = async (api, ids) => {
+    const unique = [...new Set(ids)];
+    for (const id of unique) await api.session.remove({sessionID: id});
+    return unique;
+  };
 })();

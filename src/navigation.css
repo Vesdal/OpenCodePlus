@@ -57,7 +57,7 @@
 .plus-loose-sessions {margin-top:12px;}
 .plus-project-title::before {content:'›';display:inline-block;margin-right:8px;transition:transform 160ms;}
 .plus-project-title[aria-expanded=true]::before {transform:rotate(90deg);}
-.plus-project-sessions {padding-left:12px;border-left:1px solid var(--v2-border-border-muted);margin:0 8px 8px;}
+.plus-project-sessions {padding-left:12px;border-left:1px solid var(--v2-border-border-muted);margin:0 0 8px 8px;}
 .plus-project-sessions[hidden] {display:none;}
 .plus-project-sessions:not([hidden]) {animation:none;}
 .settings {animation:plus-rise var(--plus-base) var(--plus-ease);}

@@ -16,14 +16,60 @@ function plusProjectsPage(e) {
     if (danger) node.className = 'plus-danger';
     node.onclick = action; return node;
   };
+  const listAllSessions = async api => {
+    const out = [];
+    let cursor;
+    for(;;){
+      const page = await api.session.list({limit: 5000, order: 'desc', parentID: null, ...(cursor ? {cursor} : {})});
+      out.push(...page.data);
+      if (page.data.length < 5000 || !page.cursor?.next) return out;
+      cursor = page.cursor.next;
+    }
+  };
+  const normDir = d => d.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
   const confirmDelete = (directories, done) => {
     if (!directories.length) return;
     const dialog = document.createElement('dialog'); dialog.className = 'plus-confirm';
-    const heading = document.createElement('h2'); heading.textContent = directories.length === 1 ? 'Delete project permanently?' : 'Delete ' + directories.length + ' projects permanently?';
-    const message = document.createElement('p'); message.textContent = 'This permanently removes the selected items from this desktop. You cannot restore them from the bin. Project files and shared session history are not deleted.';
+    const heading = document.createElement('h2'); heading.textContent = directories.length === 1 ? 'Delete permanently?' : 'Delete ' + directories.length + ' items permanently?';
+    const message = document.createElement('p'); message.textContent = 'This permanently deletes the selected items from this computer to free space. Session data is removed and cannot be restored. Project files on disk are preserved.';
+    const error = document.createElement('p'); error.setAttribute('role', 'alert');
     const cancel = button('Cancel', () => dialog.close());
-    const accept = button('Delete permanently', () => { for (const directory of directories) directory.startsWith(sessionPrefix) ? window.__plusSessions.remove(sessionServer(), directory.slice(sessionPrefix.length)) : context.projects.deleteRegistration(directory); done(); dialog.close(); }, true);
-    dialog.append(heading, message, cancel, accept); document.body.append(dialog);
+    const accept = button('Delete permanently', async () => {
+      accept.disabled = true;
+      try {
+        const api = context.sdk.api.session;
+        const binSessions = window.__plusSessions.bin(sessionServer());
+        for (const directory of directories) {
+          if (directory.startsWith(sessionPrefix)) {
+            const id = directory.slice(sessionPrefix.length);
+            const entry = binSessions.find(x => x.session.id === id);
+            const ids = [...new Set(entry ? [entry.session.id, ...entry.ids] : [id])];
+            await window.__plusPurgeSessionIds(api, ids);
+            try { window.__plusTabsRemove?.(sessionServer(), ids); } catch {}
+            window.__plusSessions.remove(sessionServer(), id);
+          } else {
+            const active = ht(context).find(p => p.worktree === directory);
+            const dirs = new Set((active ? [active.worktree, ...active.sandboxes || []] : [directory]).map(normDir));
+            const top = (await listAllSessions(api)).filter(s => !s.time.archived && dirs.has(normDir(s.location.directory)));
+            const ids = new Set();
+            for (const s of top) ids.add(s.id);
+            for (const entry of binSessions.filter(x => dirs.has(normDir(x.session.location.directory)))) {
+              ids.add(entry.session.id);
+              for (const id of entry.ids) ids.add(id);
+            }
+            const purged = await window.__plusPurgeSessionIds(api, [...ids]);
+            try { window.__plusTabsRemove?.(sessionServer(), purged); } catch {}
+            for (const entry of binSessions.filter(x => purged.includes(x.session.id))) window.__plusSessions.remove(sessionServer(), entry.session.id);
+            context.projects.deleteRegistration(directory);
+          }
+        }
+        done(); dialog.close();
+      } catch {
+        error.textContent = 'Unable to permanently delete. Retry.';
+        accept.disabled = false;
+      }
+    }, true);
+    dialog.append(heading, message, error, cancel, accept); document.body.append(dialog);
     dialog.addEventListener('close', () => dialog.remove(), { once: true }); dialog.showModal(); cancel.focus();
   };
   const heading = document.createElement('div'); heading.className = 'plus-manager-heading';
@@ -50,7 +96,7 @@ function plusProjectsPage(e) {
     const selected = new Set(), checks = new Map();
     const panel = document.createElement('section'); panel.className = 'plus-manager-section';
     const title = document.createElement('h3'); title.textContent = label;
-    const description = document.createElement('p'); description.textContent = inBin ? 'Binned projects and sessions. Projects can be restored within 30 days; sessions remain until restored or removed. Project files and shared session history are preserved.' : 'Manage projects and their settings.';
+    const description = document.createElement('p'); description.textContent = inBin ? 'Binned projects and sessions. Projects can be restored within 30 days; binned sessions restore with them. Delete permanently removes session data from this computer to free space; project files on disk are preserved.' : 'Manage projects and their settings.';
     const toolbar = document.createElement('div'); toolbar.className = 'plus-selection-toolbar';
     const allLabel = document.createElement('label'), all = document.createElement('input'); all.type = 'checkbox';
     allLabel.append(all, document.createTextNode('Select all'));

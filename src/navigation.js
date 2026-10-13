@@ -20,6 +20,7 @@ function plusStart() {
 }
 function plusSidebar() {
    const home=rH(), projects=WU(home), tabs=wL(), settings=jH(), language=TD();
+  window.__plusTabsRemove=(serverKey,sessionIDs)=>{try{tabs.removeSessions({server:serverKey,sessionIDs})}catch{}};
   let initialized=false,startupTimer;
   A(()=>clearTimeout(startupTimer));
   T(()=>{
@@ -90,7 +91,23 @@ function plusSidebar() {
       },`plus-project-title`);title.title=project.worktree;
       const projectHeader=document.createElement(`div`);projectHeader.className=`plus-project-header`;projectHeader.append(title);
       const key=`project:${Q.key(server)}:${worktree}`,p=iconButton(`Pin project`,`pin`,()=>pin(key));T(()=>p.setAttribute(`aria-pressed`,String(pins().includes(key))));projectHeader.append(p);
-      projectHeader.append(iconButton(`Move project to bin`,`delete`,()=>projects.project.close(server,project.worktree)));row.append(projectHeader);
+      projectHeader.append(iconButton(`Move project to bin`,`delete`,()=>{
+        // Bin the project together with all of its sessions (restorable, nothing deleted).
+        const serverKey=Q.key(server);
+        (async()=>{
+          try{
+            const ctx=home.server.context(server);
+            const all=await r6((e,n)=>ctx.sdk.api.session.list(e,n));
+            const dirs=[project.worktree,...project.sandboxes||[]].map(eE);
+            for(const s of all.filter(s=>!s.parentID&&!s.time.archived&&!window.__plusSessions.hidden(serverKey,s.id)&&dirs.includes(eE(s.location.directory)))){
+              const ids=c6(ctx.data.session.list(),s.id);
+              window.__plusSessions.close(serverKey,s,ids);
+              window.__plusTabsRemove(serverKey,ids.length?ids:[s.id]);
+            }
+          }catch{}
+          projects.project.close(server,project.worktree);
+        })();
+      }));row.append(projectHeader);
       const content=document.createElement(`div`);content.className=`plus-project-sessions`;row.append(content);
       T(()=>{content.hidden=!expanded()});
       H(content,F(R,{get when(){return expanded()},get children(){return [
