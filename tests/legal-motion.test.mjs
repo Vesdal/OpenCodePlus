@@ -18,12 +18,11 @@ test('settings transitions use targeted animation and honor reduced motion',()=>
   assert.match(source,/prefers-reduced-motion: reduce/);
   assert.match(source,/panel\.getAnimations\(\)/);
 });
-test('settings section switches animate the panel; search typing stays direct',()=>{
+test('settings section switches animate via CSS on every mounted panel',()=>{
+  const css=fs.readFileSync('src/plus.css','utf8');
+  assert.ok(css.includes('.settings-panel'));
+  assert.ok(css.includes('plus-settings-in'));
+  assert.ok(css.includes('duration: 240') || css.includes('240ms'));
   const build=fs.readFileSync('tools/build.mjs','utf8');
-  assert.ok(build.includes('n.select(e),window.__opencodePlus.animateSettings()'));
-  assert.ok(build.includes('onChange:e=>{n.select(e),window.__opencodePlus.animateSettings()}'));
   assert.ok(!build.includes('window.__opencodePlus.transition(()=>{t.search.clear()'));
-  const plus=fs.readFileSync('src/plus.js','utf8');
-  assert.ok(plus.includes('querySelectorAll'));
-  assert.ok(plus.includes('duration: 240'));
 });
