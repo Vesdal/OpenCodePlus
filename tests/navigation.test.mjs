@@ -30,3 +30,9 @@ test('sidebar footer keeps only Add project; per-project New session stays',()=>
   assert.ok(!navigation.includes('button(`+ New session`,()=>home.project.openNewSession())'));
   assert.ok(navigation.includes('button(`+ New session`,()=>home.project.openProjectNewSession(server,project.worktree)'));
 });
+test('sidebar keeps full session objects for the shared session cache',()=>{
+  const navigation=fs.readFileSync('src/navigation.js','utf8');
+  assert.ok(navigation.includes('openProjectSession(server,'));
+  assert.ok(!navigation.includes('.map(slim)'));
+  assert.ok(!navigation.includes('const slim='));
+});

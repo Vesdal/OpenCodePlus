@@ -8,4 +8,6 @@ Navigation is built within the existing Solid application context. Projects expa
 
 Display names: `tools/set-exe-display-names.ps1` (via `tools/ExeVersionPatch.cs`, Win32 version resources only) names the desktop and CLI executables OpenCode+ so Task Manager shows OpenCode+ instead of OpenCode/Bun. Version numbers, code and vendor attributions are preserved. `tools/update-installed.ps1` stops the desktop and the background service, patches both executables, restarts the service, and removes any stale OpenCode shortcut so only OpenCode+ remains in Start Menu and Desktop.
 
+Settings motion: switching sections animates only the settings panel (180 ms fade/slide, honors reduced motion); typing in settings search no longer runs a full-page transition per keystroke.
+
 QA launches with `OPENCODE_PLUS_QA=1` create a hidden window, preventing desktop focus interference. Do not use that environment variable for normal launches. RAM savings beyond the existing spellcheck/spare-renderer changes are not established by a controlled benchmark.

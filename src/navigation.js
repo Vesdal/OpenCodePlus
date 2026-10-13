@@ -74,6 +74,8 @@ function plusSidebar() {
       const row=document.createElement(`section`);row.className=`plus-project`;
       const name=project.name||project.worktree.split(/[\\/]/).filter(Boolean).at(-1)||project.worktree;
       let generation=0,controller;
+      // Sessions stay full server objects: openProjectSession hands them to the
+      // shared session cache, which requires every field. Never slim them here.
       const load=async()=>{controller?.abort();controller=new AbortController();const signal=controller.signal;const current=++generation;setLoading(true);setError(false);try{
         const ctx=home.server.context(server);
         const all=await r6((e,n)=>ctx.sdk.api.session.list(e,n),signal);

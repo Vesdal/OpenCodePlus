@@ -18,3 +18,8 @@ test('settings transitions use targeted animation and honor reduced motion',()=>
   assert.match(source,/prefers-reduced-motion: reduce/);
   assert.match(source,/panel\.getAnimations\(\)/);
 });
+test('settings section switches animate the panel; search typing stays direct',()=>{
+  const build=fs.readFileSync('tools/build.mjs','utf8');
+  assert.ok(build.includes('n.select(e),window.__opencodePlus.animateSettings()'));
+  assert.ok(!build.includes('window.__opencodePlus.transition(()=>{t.search.clear()'));
+});
