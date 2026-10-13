@@ -33,7 +33,6 @@ Any support is appreciated tho
 - Customizations, tests, build/packaging scripts, and original OpenCode source
   pinned to `v2.0.24`.
 - `AGENTS.md` and a small development knowledge base in `docs/`.
-- No personal `opencode.json`, API keys, or chat history.
 
 Run `npm test` for the customization tests. Building currently needs the
 matching Windows runtime; fresh-machine builds aren't one-click yet.
