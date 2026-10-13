@@ -6,4 +6,6 @@ The single original archive is retained in `%LOCALAPPDATA%/OpenCodePlus/rollback
 
 Navigation is built within the existing Solid application context. Projects expand into server-backed session lists; selecting a session uses the original navigation API. The `/` route opens a chat rather than a home page. Startup preference and sidebar collapse state are local profile preferences. Settings stays in the sidebar footer; its keyboard shortcut remains intact.
 
+Display names: `tools/set-exe-display-names.ps1` (via `tools/ExeVersionPatch.cs`, Win32 version resources only) names the desktop and CLI executables OpenCode+ so Task Manager shows OpenCode+ instead of OpenCode/Bun. Version numbers, code and vendor attributions are preserved. `tools/update-installed.ps1` stops the desktop and the background service, patches both executables, restarts the service, and removes any stale OpenCode shortcut so only OpenCode+ remains in Start Menu and Desktop.
+
 QA launches with `OPENCODE_PLUS_QA=1` create a hidden window, preventing desktop focus interference. Do not use that environment variable for normal launches. RAM savings beyond the existing spellcheck/spare-renderer changes are not established by a controlled benchmark.

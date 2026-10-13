@@ -12,6 +12,22 @@ if (!(Test-Path (Join-Path $backup 'app.asar'))) {
 }
 Get-CimInstance Win32_Process | Where-Object { $_.Name -in @('OpenCode.exe','OpenCode+.exe','OCodePlus.exe') -and $_.ExecutablePath -and ($_.ExecutablePath.StartsWith($original) -or $_.ExecutablePath.StartsWith($custom)) } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Start-Sleep -Milliseconds 500
+$cli = Join-Path $original 'resources\opencode-cli.exe'
+$serviceWasRunning = $false
+if (Test-Path -LiteralPath $cli) {
+  $serviceStatus = (& $cli service status 2>$null | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+  if ($serviceStatus -match '^http://(127\.0\.0\.1|localhost):\d+/?$') {
+    $serviceWasRunning = $true
+    & $cli service stop | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot stop the background service; executables stay locked.' }
+    for ($i = 0; $i -lt 20; $i++) {
+      Start-Sleep -Milliseconds 500
+      $serviceStatus = (& $cli service status 2>$null | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+      if ($serviceStatus -eq 'stopped') { break }
+      if ($i -eq 19) { throw 'Background service did not stop; executables stay locked.' }
+    }
+  }
+}
 Copy-Item (Join-Path $custom 'resources\app.asar') $archive -Force
 $icons = Join-Path $original 'resources\icons'
 New-Item -ItemType Directory -Path $icons -Force | Out-Null
@@ -19,6 +35,11 @@ Copy-Item (Join-Path $custom 'resources\icons\icon.ico') $icons -Force
 Copy-Item (Join-Path $custom 'resources\icons\icon.png') $icons -Force
 if (!(Test-Path $executable)) { Move-Item (Join-Path $original 'OpenCode.exe') $executable }
 & (Join-Path $PSScriptRoot 'executable-icon.ps1') -Executable $executable -Icon (Join-Path $icons 'icon.ico')
+& (Join-Path $PSScriptRoot 'set-exe-display-names.ps1') -DesktopExe $executable -CliExe (Join-Path $original 'resources\opencode-cli.exe')
+if ($serviceWasRunning) {
+  $endpoint = (& $cli service start 2>&1 | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+  if ($endpoint -notmatch '^http://(127\.0\.0\.1|localhost):\d+/?$') { throw 'Background service did not restart; launch OpenCode+ to restore it.' }
+}
 $source = Join-Path $original 'resources\source'
 New-Item -ItemType Directory -Path $source -Force | Out-Null
 $project = Split-Path $PSScriptRoot -Parent
@@ -27,18 +48,17 @@ Copy-Item (Join-Path $project 'LICENSE'),(Join-Path $project 'LEGAL.md') $source
 $launcher = Join-Path $original 'resources\launch-opencode-plus.ps1'
 Copy-Item (Join-Path $PSScriptRoot 'launch-opencode-plus.ps1') $launcher -Force
 $shell = New-Object -ComObject WScript.Shell
-foreach ($folder in @([Environment]::GetFolderPath('Desktop'), (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'))) {
+$shortcutFolders = @([Environment]::GetFolderPath('Desktop'), (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'))
+try { $shortcutFolders += 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs' } catch {}
+foreach ($folder in $shortcutFolders) {
   $link = $shell.CreateShortcut((Join-Path $folder 'OpenCode+.lnk'))
   $link.TargetPath = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
   $link.Arguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $launcher + '"'
   $link.WorkingDirectory = $original
   $link.IconLocation = (Join-Path $icons 'icon.ico') + ',0'
   $link.Description = 'OpenCode+ by Vesdal'
-  $link.Save()
-  $old = Join-Path $folder 'OpenCode.lnk'
-  if (Test-Path $old) {
-    $oldLink = $shell.CreateShortcut($old)
-    if ($oldLink.TargetPath -eq (Join-Path $original 'OpenCode.exe')) { Remove-Item $old }
-  }
+  try { $link.Save() } catch {}
+  # Only OpenCode+ must remain: drop any stale OpenCode shortcut whatever it targets.
+  try { Remove-Item (Join-Path $folder 'OpenCode.lnk') -Force -ErrorAction SilentlyContinue } catch {}
 }
 Write-Output 'Updated installed application; existing profile, configurations and service data preserved.'
