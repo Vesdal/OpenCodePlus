@@ -114,7 +114,7 @@ function plusSidebar() {
       A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshLoose);looseController?.abort();setLoose([])});return group;
   }}));
    const footer=document.createElement(`div`);footer.className=`plus-nav-footer`;
-  footer.append(button(`+ Add project`,()=>{const server=home.server.focused();if(server)projects.project.choose(server)}),button(`+ New session`,()=>home.project.openNewSession()));
+  footer.append(button(`+ Add project`,()=>{const server=home.server.focused();if(server)projects.project.choose(server)}));
   const settingsButton=button(``,()=>window.__opencodePlus.transition(settings),`plus-nav-settings`);settingsButton.title=`Settings`;settingsButton.setAttribute(`aria-label`,`Settings`);
   H(settingsButton,F(bN,{name:`settings-gear`,size:`small`}));footer.append(settingsButton);root.append(footer);
   queueMicrotask(()=>{const aside=root.closest(`aside`);if(aside){aside.dataset.collapsed=localStorage.getItem(`plus.sidebar.collapsed`)||`false`;toggle.setAttribute(`aria-expanded`,String(aside.dataset.collapsed!==`true`))}});

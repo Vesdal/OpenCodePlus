@@ -24,3 +24,9 @@ test('project identity stays stable and startup uses the existing Preferences se
    assert.ok(navigation.includes('No projects found'));
    assert.ok(navigation.includes('tabs.select(last)'));
 });
+test('sidebar footer keeps only Add project; per-project New session stays',()=>{
+  const navigation=fs.readFileSync('src/navigation.js','utf8');
+  assert.ok(navigation.includes('+ Add project'));
+  assert.ok(!navigation.includes('button(`+ New session`,()=>home.project.openNewSession())'));
+  assert.ok(navigation.includes('button(`+ New session`,()=>home.project.openProjectNewSession(server,project.worktree)'));
+});
