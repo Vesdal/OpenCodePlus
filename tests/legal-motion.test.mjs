@@ -21,5 +21,9 @@ test('settings transitions use targeted animation and honor reduced motion',()=>
 test('settings section switches animate the panel; search typing stays direct',()=>{
   const build=fs.readFileSync('tools/build.mjs','utf8');
   assert.ok(build.includes('n.select(e),window.__opencodePlus.animateSettings()'));
+  assert.ok(build.includes('onChange:e=>{n.select(e),window.__opencodePlus.animateSettings()}'));
   assert.ok(!build.includes('window.__opencodePlus.transition(()=>{t.search.clear()'));
+  const plus=fs.readFileSync('src/plus.js','utf8');
+  assert.ok(plus.includes('querySelectorAll'));
+  assert.ok(plus.includes('duration: 240'));
 });

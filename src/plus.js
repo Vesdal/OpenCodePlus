@@ -11,10 +11,12 @@
     animateSettings() {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       requestAnimationFrame(() => {
-        const panel = document.querySelector('.settings-content');
-        if (!panel) return;
-        panel.getAnimations().forEach(animation => animation.cancel());
-        panel.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 180, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        const panels = document.querySelectorAll('.settings-content');
+        if (!panels.length) return;
+        for (const panel of panels) {
+          panel.getAnimations().forEach(animation => animation.cancel());
+          panel.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'cubic-bezier(.22,.8,.24,1)' });
+        }
       });
     },
     notifyRemoved(row) {
