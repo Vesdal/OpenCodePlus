@@ -4,9 +4,14 @@
   const italian = () => (document.documentElement.lang || navigator.language || '').startsWith('it');
   window.__opencodePlus = {
     transition(action) {
+      if (typeof action !== 'function') return;
       if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) return action();
-      const transition = document.startViewTransition(action);
-      transition.finished.catch(() => {});
+      try {
+        const transition = document.startViewTransition(action);
+        if (transition && transition.finished && typeof transition.finished.catch === 'function') transition.finished.catch(() => {});
+      } catch {
+        return action();
+      }
     },
     animateSettings() {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;

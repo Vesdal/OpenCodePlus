@@ -67,7 +67,7 @@ edit('out/renderer/assets/shell-UUiEcwLs.js', source => {
    if (projectsStart < 0 || projectsEnd < 0) throw new Error('Project settings boundary missing');
    source = source.slice(0, projectsStart) + 'Vi=plusProjectsPage' + source.slice(projectsEnd);
   source = replaceOnce(source, 's=n=>{t.search.clear(),e.onChange(n)}', 's=n=>{t.search.clear();e.onChange(n)}');
-  source = replaceOnce(source, 's.$$click=i,A(s,L(U,{name:`arrow-left`', 's.$$click=()=>window.__opencodePlus.transition(i),A(s,L(U,{name:`arrow-left`');
+  source = replaceOnce(source, 's.$$click=i,A(s,L(U,{name:`arrow-left`', 's.$$click=()=>{try{window.__opencodePlus?window.__opencodePlus.transition(i):i()}catch{i()}},A(s,L(U,{name:`arrow-left`');
    return source + '\n' + fs.readFileSync('src/project-settings.js', 'utf8');
 });
 for (const entry of entries.filter(e => e.full.startsWith('out/renderer/') && e.full.endsWith('.css'))) entry.data = Buffer.from(removeGradients(entry.data.toString()));

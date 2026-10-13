@@ -45,4 +45,14 @@
     for (const id of unique) await api.session.remove({sessionID: id});
     return unique;
   };
+  // Best-effort variant for the confirm-delete flow: one stale or locked id
+  // must not abort the whole batch (and poison every retry with the same id).
+  window.__plusPurgeSessionIdsBestEffort = async (api, ids) => {
+    const purged = [], failed = [];
+    for (const id of [...new Set(ids)]) {
+      try { await api.session.remove({sessionID: id}); purged.push(id); }
+      catch { failed.push(id); }
+    }
+    return {purged, failed};
+  };
 })();

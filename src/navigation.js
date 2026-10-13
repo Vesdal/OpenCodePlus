@@ -1,6 +1,6 @@
 window.__plusSessionServerKey = server => Q.key(server);
 function plusStart() {
-  const tabs=wL(), home=rH(); let started=false;
+  const tabs=wL(), home=rH(), projects=WU(home); let started=false;
   T(()=>{
     if(started||window.__plusChatInitialized||!tabs.ready()||!tabs.recentReady())return;
     const server=home.server.focused(), project=home.project.newSession();
@@ -15,7 +15,7 @@ function plusStart() {
   const heading=document.createElement(`h2`);heading.textContent=`No projects found`;
   const text=document.createElement(`p`);text.textContent=`Create a project first to start a chat.`;
   const add=document.createElement(`button`);add.textContent=`Add project`;add.type=`button`;
-  add.onclick=()=>{const server=home.server.focused();if(server)WU(home).project.choose(server)};
+  add.onclick=()=>{const server=home.server.focused();if(server)projects.project.choose(server)};
   root.append(heading,text,add);return root;
 }
 function plusSidebar() {

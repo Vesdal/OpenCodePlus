@@ -26,3 +26,10 @@ test('settings section switches animate via CSS on every mounted panel',()=>{
   const build=fs.readFileSync('tools/build.mjs','utf8');
   assert.ok(!build.includes('window.__opencodePlus.transition(()=>{t.search.clear()'));
 });
+test('settings back button always navigates, with or without the transition helper',()=>{
+  const build=fs.readFileSync('tools/build.mjs','utf8');
+  assert.ok(build.includes('window.__opencodePlus?window.__opencodePlus.transition(i):i()'));
+  const plus=fs.readFileSync('src/plus.js','utf8');
+  assert.ok(plus.includes('typeof action !=='));
+  assert.ok(plus.includes('} catch {'));
+});

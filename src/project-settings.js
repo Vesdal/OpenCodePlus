@@ -44,9 +44,10 @@ function plusProjectsPage(e) {
             const id = directory.slice(sessionPrefix.length);
             const entry = binSessions.find(x => x.session.id === id);
             const ids = [...new Set(entry ? [entry.session.id, ...entry.ids] : [id])];
-            await window.__plusPurgeSessionIds(api, ids);
-            try { window.__plusTabsRemove?.(sessionServer(), ids); } catch {}
+            const result = await window.__plusPurgeSessionIdsBestEffort(api, ids);
+            try { window.__plusTabsRemove?.(sessionServer(), result.purged); } catch {}
             window.__plusSessions.remove(sessionServer(), id);
+            if (result.failed.length) throw new Error('partial purge');
           } else {
             const active = ht(context).find(p => p.worktree === directory);
             const dirs = new Set((active ? [active.worktree, ...active.sandboxes || []] : [directory]).map(normDir));
@@ -57,10 +58,11 @@ function plusProjectsPage(e) {
               ids.add(entry.session.id);
               for (const id of entry.ids) ids.add(id);
             }
-            const purged = await window.__plusPurgeSessionIds(api, [...ids]);
-            try { window.__plusTabsRemove?.(sessionServer(), purged); } catch {}
-            for (const entry of binSessions.filter(x => purged.includes(x.session.id))) window.__plusSessions.remove(sessionServer(), entry.session.id);
+            const purged = await window.__plusPurgeSessionIdsBestEffort(api, [...ids]);
+            try { window.__plusTabsRemove?.(sessionServer(), purged.purged); } catch {}
+            for (const entry of binSessions.filter(x => purged.purged.includes(x.session.id))) window.__plusSessions.remove(sessionServer(), entry.session.id);
             context.projects.deleteRegistration(directory);
+            if (purged.failed.length) throw new Error('partial purge');
           }
         }
         done(); dialog.close();

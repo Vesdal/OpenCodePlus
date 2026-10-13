@@ -40,10 +40,20 @@ test('project trash bins the project sessions without deleting data', () => {
 
 test('permanent delete removes backend session data to free space', () => {
   const settings = fs.readFileSync('src/project-settings.js', 'utf8');
-  assert.ok(settings.includes('__plusPurgeSessionIds(api'));
+  assert.ok(settings.includes('__plusPurgeSessionIdsBestEffort(api'));
   assert.ok(settings.includes('deleteRegistration(directory)'));
   assert.ok(settings.includes('__plusSessions.remove(sessionServer()'));
   assert.ok(settings.includes('to free space'));
+});
+test('best-effort purge keeps confirmed ids and reports the rest without aborting', async () => {
+  const context = lifecycleContext();
+  const api = {session: {remove: async ({sessionID}) => { if (sessionID === 'stale') throw new Error('gone'); }}};
+  const result = await context.window.__plusPurgeSessionIdsBestEffort(api, ['a', 'stale', 'a', 'b']);
+  assert.equal([...result.purged].join(','), 'a,b');
+  assert.equal([...result.failed].join(','), 'stale');
+  const empty = await context.window.__plusPurgeSessionIdsBestEffort(api, []);
+  assert.equal([...empty.purged].join(','), '');
+  assert.equal([...empty.failed].join(','), '');
 });
 
 test('project and session trash icons share the same right edge', () => {

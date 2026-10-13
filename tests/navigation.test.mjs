@@ -36,3 +36,8 @@ test('sidebar keeps full session objects for the shared session cache',()=>{
   assert.ok(!navigation.includes('.map(slim)'));
   assert.ok(!navigation.includes('const slim='));
 });
+test('empty-state Add project reuses the setup-time facade (event handlers run owner-less)',()=>{
+  const navigation=fs.readFileSync('src/navigation.js','utf8');
+  assert.ok(!navigation.includes('WU(home).project.choose'));
+  assert.ok(navigation.includes('projects.project.choose(server)'));
+});
