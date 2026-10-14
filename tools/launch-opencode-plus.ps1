@@ -22,6 +22,27 @@ function Resolve-OpenCodeService {
     return $endpoint
 }
 
+function Wait-OpenCodeServiceHealthy {
+    # The desktop discovers (never starts) the service, so only open it once
+    # the endpoint accepts connections. Otherwise the desktop shows
+    # "Desktop IPC handler failed" on cold boot.
+    param([string]$CLI, [string]$Endpoint)
+    $uri = [System.Uri]$Endpoint
+    $deadline = (Get-Date).AddSeconds(60)
+    while ((Get-Date) -lt $deadline) {
+        $status = Invoke-OpenCodeCLI -CLI $CLI -CLIArgs @('service', 'status')
+        if ($status -match '^http://(127\.0\.0\.1|localhost):\d+/?$') {
+            $client = New-Object System.Net.Sockets.TcpClient
+            try {
+                $iar = $client.BeginConnect($uri.Host, $uri.Port, $null, $null)
+                if ($iar.AsyncWaitHandle.WaitOne(1000)) { $client.EndConnect($iar); return $status }
+            } catch { } finally { $client.Close() }
+        }
+        Start-Sleep -Milliseconds 500
+    }
+    throw ('Service did not become healthy in time: ' + $Endpoint)
+}
+
 # Dot-source only the functions for regression tests; never launch or modify a service.
 if ($MyInvocation.InvocationName -eq '.') { return }
 try {
@@ -29,8 +50,10 @@ try {
     $cli = Join-Path $PSScriptRoot 'opencode-cli.exe'
     $desktop = Join-Path $installation 'OCodePlus.exe'
     $expectedVersion = (Get-Content -LiteralPath (Join-Path $PSScriptRoot 'opencode-cli.version') -Raw).Trim()
+    # Keep the CLI service registry aligned with the customized desktop's userData profile.
+    $env:XDG_STATE_HOME = Join-Path $env:APPDATA 'ai.opencode.desktop.plus.custom-20261009'
     if (!(Test-Path -LiteralPath $desktop) -or !(Test-Path -LiteralPath $cli)) { throw 'The customized desktop or its bundled CLI is missing.' }
-    $endpoint = Resolve-OpenCodeService -CLI $cli -ExpectedVersion $expectedVersion
+    $endpoint = Wait-OpenCodeServiceHealthy -CLI $cli -Endpoint (Resolve-OpenCodeService -CLI $cli -ExpectedVersion $expectedVersion)
     if ($CheckOnly) { Write-Output ('Service ready: ' + $endpoint); exit 0 }
     # The desktop remains discovery-only. This launcher never stops, replaces, or upgrades a running service.
     Start-Process -FilePath $desktop -WorkingDirectory $installation -WindowStyle Normal | Out-Null
