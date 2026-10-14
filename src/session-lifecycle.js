@@ -47,11 +47,15 @@
   };
   // Best-effort variant for the confirm-delete flow: one stale or locked id
   // must not abort the whole batch (and poison every retry with the same id).
+  // An id the backend no longer knows (404 / not found) counts as purged:
+  // the goal, freeing the slot, is already achieved.
+  const purgedText = value => [value?.message, value?.code, value?.status, value?.name, typeof value === 'string' ? value : ''].map(String).join(' ');
+  const alreadyGone = value => /sessionnotfound|not found|\b404\b/.test(purgedText(value).toLowerCase());
   window.__plusPurgeSessionIdsBestEffort = async (api, ids) => {
     const purged = [], failed = [];
     for (const id of [...new Set(ids)]) {
       try { await api.session.remove({sessionID: id}); purged.push(id); }
-      catch { failed.push(id); }
+      catch (e) { if (alreadyGone(e)) purged.push(id); else failed.push({id, reason: purgedText(e).slice(0, 160)}); }
     }
     return {purged, failed};
   };

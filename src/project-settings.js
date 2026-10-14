@@ -47,7 +47,7 @@ function plusProjectsPage(e) {
             const result = await window.__plusPurgeSessionIdsBestEffort(api, ids);
             try { window.__plusTabsRemove?.(sessionServer(), result.purged); } catch {}
             window.__plusSessions.remove(sessionServer(), id);
-            if (result.failed.length) throw new Error('partial purge');
+            if (result.failed.length) throw new Error('partial purge: ' + result.failed.map(f => f.id).join(', '));
           } else {
             const active = ht(context).find(p => p.worktree === directory);
             const dirs = new Set((active ? [active.worktree, ...active.sandboxes || []] : [directory]).map(normDir));
@@ -62,12 +62,13 @@ function plusProjectsPage(e) {
             try { window.__plusTabsRemove?.(sessionServer(), purged.purged); } catch {}
             for (const entry of binSessions.filter(x => purged.purged.includes(x.session.id))) window.__plusSessions.remove(sessionServer(), entry.session.id);
             context.projects.deleteRegistration(directory);
-            if (purged.failed.length) throw new Error('partial purge');
+            if (purged.failed.length) throw new Error('partial purge: ' + purged.failed.map(f => f.id).join(', '));
           }
         }
         done(); dialog.close();
-      } catch {
-        error.textContent = 'Unable to permanently delete. Retry.';
+      } catch (e) {
+        const reason = String((e && e.message) || '').replace(/^partial purge:?\s*/, '');
+        error.textContent = reason ? 'Unable to permanently delete ' + reason + '. Retry.' : 'Unable to permanently delete. Retry.';
         accept.disabled = false;
       }
     }, true);

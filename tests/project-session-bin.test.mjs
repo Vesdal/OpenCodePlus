@@ -50,10 +50,17 @@ test('best-effort purge keeps confirmed ids and reports the rest without abortin
   const api = {session: {remove: async ({sessionID}) => { if (sessionID === 'stale') throw new Error('gone'); }}};
   const result = await context.window.__plusPurgeSessionIdsBestEffort(api, ['a', 'stale', 'a', 'b']);
   assert.equal([...result.purged].join(','), 'a,b');
-  assert.equal([...result.failed].join(','), 'stale');
+  assert.equal(result.failed.map(f => f.id).join(','), 'stale');
   const empty = await context.window.__plusPurgeSessionIdsBestEffort(api, []);
   assert.equal([...empty.purged].join(','), '');
-  assert.equal([...empty.failed].join(','), '');
+  assert.equal(empty.failed.length, 0);
+});
+test('best-effort purge treats already-removed sessions as purged', async () => {
+  const context = lifecycleContext();
+  const api = {session: {remove: async () => { throw Object.assign(new Error('Session not found: ses_gone'), {status: 404}); }}};
+  const result = await context.window.__plusPurgeSessionIdsBestEffort(api, ['ses_gone']);
+  assert.equal([...result.purged].join(','), 'ses_gone');
+  assert.equal(result.failed.length, 0);
 });
 
 test('project and session trash icons share the same right edge', () => {
