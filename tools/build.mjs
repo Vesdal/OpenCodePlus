@@ -35,7 +35,12 @@ edit('out/main/index.js', source => {
   source = replaceOnce(source, 'sandbox:!0,additionalArguments', 'sandbox:!0,spellcheck:!1,additionalArguments');
   return source;
 });
-edit('out/main/desktop-Dom04DDt.js', source => replaceOnce(source, 'c.Service.ensure({file:', 'c.Service.discover({file:'));
+edit('out/main/desktop-Dom04DDt.js', source => {
+  // Keep upstream Service.ensure so the desktop recovers a missing/stale
+  // service on its own; only pin the profile state path unconditionally.
+  source = replaceOnce(source, 'a&&(process.env.XDG_STATE_HOME=R.getPath(`userData`));', 'process.env.XDG_STATE_HOME=R.getPath(`userData`);');
+  return source;
+});
 edit('out/main/platform-NkYpZriw.js', source => replaceOnce(source, 'let e=await A.checkForUpdates();', 'return;let e=await A.checkForUpdates();'));
 edit('out/renderer/assets/main-Jci-kuOG.js', source => {
   source = patchRecents(source);
@@ -122,5 +127,5 @@ if (!fs.existsSync(destination)) {
 fs.writeFileSync(path.join(destination, 'resources/app.asar'), Buffer.concat([size, pickle, ...entries.map(e => e.data)]));
 if (fs.existsSync(path.join(destination, 'OpenCode.exe'))) fs.renameSync(path.join(destination, 'OpenCode.exe'), path.join(destination, 'OpenCode+.exe'));
 fs.mkdirSync('dist', { recursive: true});
-fs.writeFileSync('dist/build.json', JSON.stringify({ version: '2.0.24', original, destination, originalArchiveHash: hash(bytes), archiveHash: hash(fs.readFileSync(path.join(destination, 'resources/app.asar'))), files: entries.length, backendPolicy: 'discover existing service only; never start, stop or upgrade' }, null, 2));
+fs.writeFileSync('dist/build.json', JSON.stringify({ version: '2.0.24', original, destination, originalArchiveHash: hash(bytes), archiveHash: hash(fs.readFileSync(path.join(destination, 'resources/app.asar'))), files: entries.length, backendPolicy: 'ensure service with pinned profile state; desktop recovers a missing service on its own' }, null, 2));
 console.log(`Built ${destination}; original installation untouched; ${entries.length} packed files.`);

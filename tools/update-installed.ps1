@@ -28,7 +28,12 @@ if (Test-Path -LiteralPath $cli) {
     }
   }
 }
-Copy-Item (Join-Path $custom 'resources\app.asar') $archive -Force
+$stagedArchive = Join-Path $custom 'resources\app.asar'
+$stagedBundle = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($stagedArchive))
+if (!$stagedBundle.Contains('c.Service.ensure({file:') -or !$stagedBundle.Contains('process.env.XDG_STATE_HOME=R.getPath(`userData`);')) {
+  throw 'The staged desktop lacks stale-service recovery; refusing to replace the working customized installation.'
+}
+Copy-Item $stagedArchive $archive -Force
 $icons = Join-Path $original 'resources\icons'
 New-Item -ItemType Directory -Path $icons -Force | Out-Null
 Copy-Item (Join-Path $custom 'resources\icons\icon.ico') $icons -Force
@@ -52,8 +57,8 @@ $shortcutFolders = @([Environment]::GetFolderPath('Desktop'), (Join-Path $env:AP
 try { $shortcutFolders += 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs' } catch {}
 foreach ($folder in $shortcutFolders) {
   $link = $shell.CreateShortcut((Join-Path $folder 'OpenCode+.lnk'))
-  $link.TargetPath = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
-  $link.Arguments = '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "' + $launcher + '"'
+  $link.TargetPath = $executable
+  $link.Arguments = ''
   $link.WorkingDirectory = $original
   $link.IconLocation = (Join-Path $icons 'icon.ico') + ',0'
   $link.Description = 'OpenCode+ by Vesdal'
