@@ -113,13 +113,16 @@ function plusSidebar() {
       const content=document.createElement(`div`);content.className=`plus-project-sessions`;row.append(content);
       T(()=>{content.hidden=!expanded()});
       H(content,F(R,{get when(){return expanded()},get children(){return [
-        button(`+ New session`,()=>home.project.openProjectNewSession(server,project.worktree),`plus-new-session`),
+        button(`+ New session`,async()=>{try{await home.project.openProjectNewSession(server,project.worktree)}finally{window.dispatchEvent(new Event(`plus-session-created`));load()}},`plus-new-session`),
         F(R,{get when(){return loading()},get children(){const n=document.createElement(`p`);n.textContent=`Loading…`;return n}}),
         F(R,{get when(){return error()},get children(){return button(`Unable to load. Retry`,load)}}),
         F(He,{get each(){return sessions()},children:session=>sessionRow(server,session,project,()=>setSessions(s=>s.filter(x=>x.id!==session.id)))})
       ]}}));
-      const refreshBin=()=>{if(expanded())load()};window.addEventListener(`plus-sessions-restored`,refreshBin);
-      A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshBin);generation++;controller?.abort();dropdownAnimation?.cancel();setSessions([])});return row;
+      const refreshOpen=()=>{if(expanded())load()};
+      window.addEventListener(`plus-sessions-restored`,refreshOpen);
+      window.addEventListener(`plus-session-created`,refreshOpen);
+      window.addEventListener(`plus-projects-changed`,refreshOpen);
+      A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshOpen);window.removeEventListener(`plus-session-created`,refreshOpen);window.removeEventListener(`plus-projects-changed`,refreshOpen);generation++;controller?.abort();dropdownAnimation?.cancel();setSessions([])});return row;
     }}));
     const [loose,setLoose]=S([]),[looseError,setLooseError]=S(false);let looseController;
     const refreshLoose=async()=>{looseController?.abort();const controller=new AbortController();looseController=controller;try{const ctx=home.server.context(server);const all=await r6((e,n)=>ctx.sdk.api.session.list(e,n),controller.signal);if(controller.signal.aborted)return;const directories=home.project.forServer(server).flatMap(p=>[p.worktree,...p.sandboxes||[]]);setLoose(window.__plusLooseSessions(all,directories,eE));setLooseError(false)}catch{if(!controller.signal.aborted)setLooseError(true)}};
@@ -128,9 +131,10 @@ function plusSidebar() {
     H(looseSection,F(R,{get when(){return looseError()},get children(){return button(`Unable to load. Retry`,refreshLoose)}}));
      H(looseSection,F(He,{get each(){const dirs=home.project.forServer(server).flatMap(p=>[p.worktree,...p.sandboxes||[]]).map(eE);return loose().filter(s=>!window.__plusSessions.hidden(Q.key(server),s.id)&&!dirs.includes(eE(s.location.directory))).sort((a,b)=>Number(pins().includes(`session:${Q.key(server)}:${b.id}`))-Number(pins().includes(`session:${Q.key(server)}:${a.id}`)))},children:s=>sessionRow(server,s,null,()=>setLoose(all=>all.filter(x=>x.id!==s.id)),true)}));
       window.addEventListener(`plus-sessions-restored`,refreshLoose);
+      window.addEventListener(`plus-session-created`,refreshLoose);
       let projectDirectories;
       T(()=>{const directories=home.project.forServer(server).flatMap(p=>[p.worktree,...p.sandboxes||[]]).map(eE).sort().join(`\n`);if(directories!==projectDirectories){projectDirectories=directories;refreshLoose()}});
-      A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshLoose);looseController?.abort();setLoose([])});return group;
+      A(()=>{window.removeEventListener(`plus-sessions-restored`,refreshLoose);window.removeEventListener(`plus-session-created`,refreshLoose);looseController?.abort();setLoose([])});return group;
   }}));
    const footer=document.createElement(`div`);footer.className=`plus-nav-footer`;
   footer.append(button(`+ Add project`,()=>{const server=home.server.focused();if(server)projects.project.choose(server)}));

@@ -28,7 +28,15 @@ test('sidebar footer keeps only Add project; per-project New session stays',()=>
   const navigation=fs.readFileSync('src/navigation.js','utf8');
   assert.ok(navigation.includes('+ Add project'));
   assert.ok(!navigation.includes('button(`+ New session`,()=>home.project.openNewSession())'));
-  assert.ok(navigation.includes('button(`+ New session`,()=>home.project.openProjectNewSession(server,project.worktree)'));
+  assert.ok(navigation.includes('openProjectNewSession(server,project.worktree)'));
+  assert.ok(navigation.includes('plus-session-created'));
+});
+test('project dropdown refreshes live without reopening',()=>{
+  const navigation=fs.readFileSync('src/navigation.js','utf8');
+  assert.ok(navigation.includes('window.addEventListener(`plus-session-created`,refreshOpen)'));
+  assert.ok(navigation.includes('window.addEventListener(`plus-projects-changed`,refreshOpen)'));
+  assert.ok(navigation.includes('window.addEventListener(`plus-session-created`,refreshLoose)'));
+  assert.ok(navigation.includes('window.removeEventListener(`plus-session-created`,refreshOpen)'));
 });
 test('sidebar keeps full session objects for the shared session cache',()=>{
   const navigation=fs.readFileSync('src/navigation.js','utf8');
