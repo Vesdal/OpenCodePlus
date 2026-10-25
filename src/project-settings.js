@@ -37,7 +37,7 @@ function plusProjectsPage(e) {
     const accept = button('Delete permanently', async () => {
       accept.disabled = true;
       try {
-        const api = context.sdk.api.session;
+        const api = context.sdk.api;
         const binSessions = window.__plusSessions.bin(sessionServer());
         for (const directory of directories) {
           if (directory.startsWith(sessionPrefix)) {

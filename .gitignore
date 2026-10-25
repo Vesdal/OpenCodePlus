@@ -3,10 +3,13 @@ dist/
 qa/
 *.log
 *.exe
-!release/*.exe
 *.asar
 *.zip
 *.7z
+AGENTS.md
+**/AGENTS.md
+**/knowledge/**
+/docs/
 opencode.json
 opencode.jsonc
 .opencode/

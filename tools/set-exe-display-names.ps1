@@ -1,5 +1,5 @@
-$ErrorActionPreference = 'Stop'
 param([string]$DesktopExe, [string]$CliExe)
+$ErrorActionPreference = 'Stop'
 # Names the installed executables so Task Manager and window lists show
 # OpenCode+ instead of the upstream OpenCode/Bun identities. Version numbers,
 # code and other resources are preserved; only display strings change.

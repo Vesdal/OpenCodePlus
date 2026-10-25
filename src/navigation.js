@@ -46,17 +46,26 @@ function plusSidebar() {
     const accept=button(`Confirm`,async()=>{accept.disabled=true;try{await action();dialog.close()}catch{error.textContent=`Unable to complete the operation. Retry.`;accept.disabled=false}},title.includes(`permanently`)?`plus-danger`:``);
     dialog.append(heading,text,error,cancel,accept);dialog.addEventListener(`close`,()=>dialog.remove(),{once:true});document.body.append(dialog);dialog.showModal();cancel.focus();
   };
+  const purgeSessionIds=async(serverKey,api,ids)=>{
+    const result=await window.__plusPurgeSessionIdsBestEffort(api,ids);
+    try{window.__plusTabsRemove?.(serverKey,result.purged)}catch{}
+    for(const id of result.purged)window.__plusSessions.remove(serverKey,id);
+    if(result.failed.length)throw new Error(result.failed.map(item=>item.id).join(`, `));
+  };
+  const listAllSessions=async api=>{
+    const out=[];let cursor;
+    for(;;){const page=await api.session.list({limit:5000,order:`desc`,parentID:null,...(cursor?{cursor}:{})});out.push(...page.data);if(page.data.length<5000||!page.cursor?.next)return out;cursor=page.cursor.next}
+  };
   const sessionRow=(server,session,project,onRemoved,unfoldered=false)=>{
     const row=document.createElement(`div`);row.className=`plus-session-row`;
     const route=gL(),key=`session:${Q.key(server)}:${session.id}`;
     const open=button(session.title||`New session`,()=>home.project.openProjectSession(server,project?.worktree||session.location.directory,session),`plus-session`);
     T(()=>{open.dataset.active=String(route.route().sessionId===session.id)});row.append(open);
     if(unfoldered){const p=iconButton(`Pin session`,`pin`,()=>pin(key));T(()=>p.setAttribute(`aria-pressed`,String(pins().includes(key))));row.append(p)}
-    row.append(iconButton(`Move session to bin`,`delete`,()=>{
+    row.append(iconButton(`Delete session permanently`,`delete`,()=>confirmAction(`Delete session permanently?`,`This permanently deletes this session and its child sessions from this computer. Project files are preserved.`,async()=>{
       const ctx=home.server.context(server),ids=c6(ctx.data.session.list(),session.id);
-      window.__plusSessions.close(Q.key(server),session,ids);
-      tabs.removeSessions({server:Q.key(server),sessionIDs:ids.length?ids:[session.id]});onRemoved();
-    }));
+      await purgeSessionIds(Q.key(server),ctx.sdk.api,[...new Set([session.id,...ids])]);onRemoved();
+    })));
     return row;
   };
   const header=document.createElement(`div`);header.className=`plus-nav-header`;
@@ -93,23 +102,15 @@ function plusSidebar() {
       },`plus-project-title`);title.title=project.worktree;
       const projectHeader=document.createElement(`div`);projectHeader.className=`plus-project-header`;projectHeader.append(title);
       const key=`project:${Q.key(server)}:${worktree}`,p=iconButton(`Pin project`,`pin`,()=>pin(key));T(()=>p.setAttribute(`aria-pressed`,String(pins().includes(key))));projectHeader.append(p);
-      projectHeader.append(iconButton(`Move project to bin`,`delete`,()=>{
-        // Bin the project together with all of its sessions (restorable, nothing deleted).
-        const serverKey=Q.key(server);
-        (async()=>{
-          try{
-            const ctx=home.server.context(server);
-            const all=await r6((e,n)=>ctx.sdk.api.session.list(e,n));
-            const dirs=[project.worktree,...project.sandboxes||[]].map(eE);
-            for(const s of all.filter(s=>!s.parentID&&!s.time.archived&&!window.__plusSessions.hidden(serverKey,s.id)&&dirs.includes(eE(s.location.directory)))){
-              const ids=c6(ctx.data.session.list(),s.id);
-              window.__plusSessions.close(serverKey,s,ids);
-              window.__plusTabsRemove(serverKey,ids.length?ids:[s.id]);
-            }
-          }catch{}
-          projects.project.close(server,project.worktree);
-        })();
-      }));row.append(projectHeader);
+      projectHeader.append(iconButton(`Delete project and sessions permanently`,`delete`,()=>confirmAction(`Delete project and its sessions permanently?`,`This permanently deletes the project's session data from this computer, including archived and binned sessions. Project files on disk are preserved.`,async()=>{
+        const ctx=home.server.context(server),api=ctx.sdk.api,serverKey=Q.key(server);
+        const dirs=new Set([project.worktree,...project.sandboxes||[]].map(eE));
+        const all=await listAllSessions(api),bin=window.__plusSessions.bin(serverKey),ids=new Set();
+        for(const s of all.filter(s=>dirs.has(eE(s.location.directory))))for(const id of [s.id,...c6(ctx.data.session.list(),s.id)])ids.add(id);
+        for(const entry of bin.filter(entry=>dirs.has(eE(entry.session.location.directory))))for(const id of [entry.session.id,...entry.ids])ids.add(id);
+        await purgeSessionIds(serverKey,api,[...ids]);
+        ctx.projects.deleteRegistration(project.worktree);
+      })));row.append(projectHeader);
       const content=document.createElement(`div`);content.className=`plus-project-sessions`;row.append(content);
       T(()=>{content.hidden=!expanded()});
       H(content,F(R,{get when(){return expanded()},get children(){return [

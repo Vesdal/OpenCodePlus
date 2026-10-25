@@ -29,13 +29,14 @@ test('purge helper propagates backend failures so the UI can retry', async () =>
   await assert.rejects(context.window.__plusPurgeSessionIds(api, ['x']));
 });
 
-test('project trash bins the project sessions without deleting data', () => {
+test('sidebar delete controls permanently purge session data while preserving project files', () => {
   const navigation = fs.readFileSync('src/navigation.js', 'utf8');
-  assert.ok(navigation.includes('Move project to bin'));
-  assert.ok(navigation.includes('__plusSessions.close(serverKey'));
-  assert.ok(navigation.includes('projects.project.close(server,project.worktree)'));
-  assert.ok(!navigation.includes('api.session.remove('));
-  assert.ok(!navigation.includes('__plusPurgeSessionIds'));
+  assert.ok(navigation.includes('Delete session permanently'));
+  assert.ok(navigation.includes('Delete project and sessions permanently'));
+  assert.ok(navigation.includes('__plusPurgeSessionIdsBestEffort(api,ids)'));
+  assert.ok(navigation.includes('ctx.projects.deleteRegistration(project.worktree)'));
+  assert.ok(navigation.includes('Project files on disk are preserved'));
+  assert.ok(navigation.includes('window.__plusSessions.remove(serverKey,id)'));
 });
 
 test('permanent delete removes backend session data to free space', () => {

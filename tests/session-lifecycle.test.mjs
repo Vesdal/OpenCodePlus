@@ -35,9 +35,10 @@ test('settings and sidebar share session identity and inventory', () => {
   assert.ok(!navigation.includes('button(`Restore`'));
 });
 
-test('sidebar trash never calls the destructive session API', () => {
+test('sidebar session deletion purges backend data after confirmation', () => {
   const source = fs.readFileSync('src/navigation.js', 'utf8');
-  assert.ok(!source.includes('data.session.remove('));
-  assert.ok(source.includes('Move session to bin'));
-  assert.ok(source.includes('__plusSessions.close('));
+  assert.ok(source.includes('Delete session permanently'));
+  assert.ok(source.includes('confirmAction(`Delete session permanently?`'));
+  assert.ok(source.includes('__plusPurgeSessionIdsBestEffort(api,ids)'));
+  assert.ok(source.includes('window.__plusSessions.remove(serverKey,id)'));
 });

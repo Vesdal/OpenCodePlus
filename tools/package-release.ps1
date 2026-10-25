@@ -1,7 +1,6 @@
 param(
     [string]$OutputDirectory = (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Coding\OpenCodePlus\Releases'),
-    [string]$StagingDirectory = (Join-Path $env:LOCALAPPDATA ('Temp\opencode\release-' + [guid]::NewGuid().ToString('N'))),
-    [switch]$IncludeNoKB
+    [string]$StagingDirectory = (Join-Path $env:LOCALAPPDATA ('Temp\opencode\release-' + [guid]::NewGuid().ToString('N')))
 )
 $ErrorActionPreference = 'Stop'
 $workspace = Split-Path $PSScriptRoot -Parent
@@ -11,7 +10,7 @@ $stage = $StagingDirectory
 if (Test-Path $stage) { throw 'Release staging already exists; refusing to overwrite.' }
 New-Item -ItemType Directory -Path $stage,$output -Force | Out-Null
 function New-Payload {
-    param([bool]$WithKnowledge, [string]$PayloadDirectory)
+    param([string]$PayloadDirectory)
     $payload = $PayloadDirectory
     New-Item -ItemType Directory -Path $payload -Force | Out-Null
     foreach ($item in Get-ChildItem $installed) {
@@ -24,9 +23,6 @@ function New-Payload {
         Copy-Item (Join-Path $installed "resources\$name") $resources -Recurse
     }
     Copy-Item (Join-Path $installed 'resources\maintenance\build\resources\app.asar') $resources
-    # Expose curated guidance beside the portable runtime, without personal config.
-    Copy-Item (Join-Path $workspace 'AGENTS.md') $payload
-    if ($WithKnowledge) { Copy-Item (Join-Path $workspace 'docs') (Join-Path $payload 'docs') -Recurse }
 }
 
 function New-Executables {
@@ -50,7 +46,7 @@ function Compress-Payload {
 $source = Join-Path $output 'Source'
 if (Test-Path $source) { throw 'Source destination already exists; refusing to overwrite.' }
 New-Item -ItemType Directory -Path $source | Out-Null
-foreach ($name in @('src','tools','tests','docs','AGENTS.md','COLLABORATORS.md','UPSTREAM.md','package.json','README.md','UPDATE.md','LICENSE','LICENSE.OpenCode.txt','LEGAL.md')) {
+foreach ($name in @('src','tools','tests','COLLABORATORS.md','UPSTREAM.md','package.json','README.md','UPDATE.md','LICENSE','LICENSE.OpenCode.txt','LEGAL.md')) {
     Copy-Item (Join-Path $workspace $name) $source -Recurse
 }
 # Include both original preferred source and the local binary patch input.
@@ -65,15 +61,9 @@ function Add-WorkspaceSource {
     Copy-Item $source (Join-Path $dest 'workspace') -Recurse
 }
 
-New-Payload -WithKnowledge $true -PayloadDirectory (Join-Path $stage 'payload')
+New-Payload -PayloadDirectory (Join-Path $stage 'payload')
 Add-WorkspaceSource -PayloadDirectory (Join-Path $stage 'payload')
 Compress-Payload -PayloadDirectory (Join-Path $stage 'payload') -ZipPath (Join-Path $stage 'payload.zip')
 New-Executables -ZipPath (Join-Path $stage 'payload.zip') -SetupName 'OpenCodePlus-Setup.exe' -PortableName 'OpenCodePlus-Portable.exe'
-if ($IncludeNoKB) {
-    New-Payload -WithKnowledge $false -PayloadDirectory (Join-Path $stage 'payload-nokb')
-    Add-WorkspaceSource -PayloadDirectory (Join-Path $stage 'payload-nokb')
-    Compress-Payload -PayloadDirectory (Join-Path $stage 'payload-nokb') -ZipPath (Join-Path $stage 'payload-nokb.zip')
-    New-Executables -ZipPath (Join-Path $stage 'payload-nokb.zip') -SetupName 'OpenCodePlus-Setup-NoKB.exe' -PortableName 'OpenCodePlus-Portable-NoKB.exe'
-}
 Get-FileHash (Join-Path $output '*.exe') -Algorithm SHA256 | ForEach-Object { "$($_.Hash)  $([IO.Path]::GetFileName($_.Path))" } | Set-Content (Join-Path $output 'SHA256SUMS.txt')
 Write-Output "Created source, installer and portable in $output. Neither executable was launched."

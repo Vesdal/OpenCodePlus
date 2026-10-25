@@ -13,8 +13,7 @@ code. Also: **native apps**, not just websites. Web apps are fine too. I just
 want my app to be let out of its basement.
 
 I used AI to customize [OpenCode](https://github.com/anomalyco/opencode):
-a friendlier project/chat sidebar, a bin with restore, and some instructions
-and knowledge to help the assistant build things more carefully.
+a friendlier project/chat sidebar and project/session management.
 
 **Still incomplete.** This is my little experiment, sooo not a full Base44
 replacement yet. It needs updates and more testing. Zero-code is the goal for
@@ -32,17 +31,13 @@ Any support is appreciated tho
 
 - Customizations, tests, build/packaging scripts, and original OpenCode source
   pinned to `v2.0.24`.
-- `AGENTS.md` and a small development knowledge base in `docs/`.
 
 Run `npm test` for the customization tests. Building currently needs the
 matching Windows runtime; fresh-machine builds aren't one-click yet.
 Details: [UPSTREAM.md](UPSTREAM.md) and [LEGAL.md](LEGAL.md).
 
-Windows installer and portable are uploaded to a **draft release**. They include
-the guidance and sources, but are unsigned and have **not been run or
-installation-tested**. Source/binary and dependency-license checks remain
-unfinished, so they're not public downloads yet. Portable unpacks to
-LocalAppData; still dosn't stick to your usb drive.
+Build scripts target the matching Windows runtime. Portable packaging unpacks
+to LocalAppData.
 
 ## Credits
 
